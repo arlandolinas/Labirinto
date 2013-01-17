@@ -1,0 +1,179 @@
+using UnityEngine;
+using System.Collections;
+using System;
+
+public class BuildLab : MonoBehaviour {
+
+  public int Size = 3;
+	public int D = 5;
+	public int Ds = 1;
+
+	public Vector3[] Vertics;
+	public Vector2[] UVics;
+	public int[] Indics;
+	
+	public Material CubeMaterial;
+
+	void Start () {
+	
+	bool[,,] WallsVert = new bool[Size,Size-1,Size];
+	bool[,,] WallsHori = new bool[Size,Size,Size-1];
+
+	WallsVert[0,0,0] = true;
+	WallsVert[0,1,0] = true;
+	WallsVert[0,0,1] = true;
+	WallsVert[0,1,1] = false;
+	WallsVert[0,0,2] = false;
+	WallsVert[0,1,2] = true;
+
+	WallsVert[1,0,0] = false;
+	WallsVert[1,1,0] = false;
+	WallsVert[1,0,1] = false;
+	WallsVert[1,1,1] = false;
+	WallsVert[1,0,2] = true;
+	WallsVert[1,1,2] = false;
+
+	WallsVert[2,0,0] = true;
+	WallsVert[2,1,0] = true;
+	WallsVert[2,0,1] = false;
+	WallsVert[2,1,1] = false;
+	WallsVert[2,0,2] = true;
+	WallsVert[2,1,2] = true;
+
+	WallsHori[0,0,0] = false;
+	WallsHori[0,1,0] = false;
+	WallsHori[0,2,0] = false;
+	WallsHori[0,0,1] = false;
+	WallsHori[0,1,1] = false;
+	WallsHori[0,2,1] = false;
+
+	WallsHori[1,0,0] = true;
+	WallsHori[1,1,0] = true;
+	WallsHori[1,2,0] = false;
+	WallsHori[1,0,1] = false;
+	WallsHori[1,1,1] = false;
+	WallsHori[1,2,1] = true;
+
+	WallsHori[2,0,0] = false;
+	WallsHori[2,1,0] = false;
+	WallsHori[2,2,0] = false;
+	WallsHori[2,0,1] = false;
+	WallsHori[2,1,1] = false;
+	WallsHori[2,2,1] = false;
+
+	int n = 0;
+
+	AddCube(ref n, new Vector3(0,0,0), new Vector3(Size*D+Ds,Size*D+Ds,Ds), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // front
+	AddCube(ref n, new Vector3(0,0,Size*D), new Vector3(Size*D+Ds,Size*D+1,Size*D+Ds), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // back
+	AddCube(ref n, new Vector3(0,0,Ds), new Vector3(Ds,Size*D+Ds,Size*D), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // left
+	AddCube(ref n, new Vector3(Size*D,0,Ds), new Vector3(Size*D+Ds,Size*D+Ds,Size*D), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // right
+	AddCube(ref n, new Vector3(Ds,Size*D,Ds), new Vector3(Size*D,Size*D+Ds,Size*D), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // up
+
+	for(int f = 0; f < Size; f++){
+
+	for(int x = 0; x < Size-1; x++){
+	for(int y = 0; y < Size; y++){
+	if(WallsVert[f,x,y]){
+		AddCube(ref n, new Vector3((x+1)*D,f*D+1,y*D+Ds), new Vector3((x+1)*D+1,f*D+D,y*D+D), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // verts
+	}
+	}
+	}
+
+	for(int x = 0; x < Size; x++){
+	for(int y = 0; y < Size-1; y++){
+	if(WallsHori[f,x,y]){
+		AddCube(ref n, new Vector3(x*D+1,f*D+Ds,(y+1)*D), new Vector3(x*D+D,f*D+D,(y+1)*D+Ds), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // horis
+	}
+	}
+	}
+
+	for(int x = 0; x < Size-1; x++){
+	for(int y = 0; y < Size-1; y++){
+		AddCube(ref n, new Vector3((x+1)*D,f*D+Ds,(y+1)*D), new Vector3((x+1)*D+Ds,f*D+D,(y+1)*D+Ds), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // columns
+	}
+	}
+
+	if(f%2 != 0){ // нечет
+		AddCube(ref n, new Vector3(Ds,f*D,Ds), new Vector3((Size-1)*D+Ds,f*D+Ds,Size*D), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // floor big
+		AddCube(ref n, new Vector3((Size-1)*D+Ds,f*D,Ds), new Vector3(Size*D,f*D+Ds,(Size-1)*D+Ds), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // floor small
+	}else{ // чет
+		AddCube(ref n, new Vector3(Ds,f*D,D), new Vector3(D,f*D+Ds,Size*D), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // floor small
+		AddCube(ref n, new Vector3(D,f*D,Ds), new Vector3(Size*D,f*D+Ds,Size*D), new Vector2(1,1), new Vector3(1,1,1), new Vector3(1,1,1)); // floor big
+	}
+	
+	}
+
+	Mesh objsmesh = new Mesh();
+
+	objsmesh.Clear();
+	objsmesh.vertices = Vertics;
+	objsmesh.uv = UVics;
+	objsmesh.SetIndices(Indics, MeshTopology.Quads, 0);
+	objsmesh.SetTriangles(objsmesh.GetTriangles(0), 0);
+	objsmesh.RecalculateNormals();
+	objsmesh.RecalculateBounds();
+	objsmesh.Optimize();
+
+	gameObject.AddComponent<MeshFilter>();
+	gameObject.GetComponent<MeshFilter>().mesh = objsmesh;
+
+	gameObject.AddComponent<MeshRenderer>();
+	gameObject.renderer.material = CubeMaterial;
+
+	}
+
+
+
+	void AddQuad(ref int index, Vector3 vFrom, Vector3 vTo, Vector2 vTile, Vector4 inds)
+	{
+	    ArrayIncV3(ref Vertics, 4);
+	    ArrayIncV2(ref UVics, 4);
+	    ArrayIncInt(ref Indics, 4);
+	    Vertics[index] = vFrom;
+	    Vertics[index+1] = new Vector3(vFrom.x,vTo.y,vTo.z);
+	    Vertics[index+2] = new Vector3(vTo.x,vFrom.y,vFrom.z);
+	    Vertics[index+3] = vTo;
+	    UVics[index] = new Vector2(0,0);
+	    UVics[index+1] = new Vector2(0,vTile.y);
+	    UVics[index+2] = new Vector2(vTile.x,0);
+	    UVics[index+3] = new Vector2(vTile.x,vTile.y);
+	    Indics[index] = index+Convert.ToInt16(inds.x);
+	    Indics[index+1] = index+Convert.ToInt16(inds.y);
+	    Indics[index+2] = index+Convert.ToInt16(inds.z);
+	    Indics[index+3] = index+Convert.ToInt16(inds.w);
+	    index += 4;
+	}
+
+	void AddCube(ref int index, Vector3 vFrom, Vector3 vTo, Vector2 vTile, Vector3 sidesBack, Vector3 sidesFront)
+	{
+	    if(sidesBack.x > 0) AddQuad(ref index, new Vector3(vFrom.x,vFrom.y,vFrom.z), new Vector3(vFrom.x,vTo.y,vTo.z), new Vector2(vTile.x,vTile.y), new Vector4(0,1,3,2));
+	    if(sidesFront.x > 0) AddQuad(ref index, new Vector3(vTo.x,vFrom.y,vFrom.z), new Vector3(vTo.x,vTo.y,vTo.z), new Vector2(vTile.x,vTile.y), new Vector4(0,1,3,2));
+	    if(sidesBack.y > 0) AddQuad(ref index, new Vector3(vFrom.x,vFrom.y,vFrom.z), new Vector3(vTo.x,vFrom.y,vTo.z), new Vector2(vTile.x,vTile.y), new Vector4(0,1,3,2));
+	    if(sidesFront.y > 0) AddQuad(ref index, new Vector3(vFrom.x,vTo.y,vFrom.z), new Vector3(vTo.x,vTo.y,vTo.z), new Vector2(vTile.x,vTile.y), new Vector4(0,1,3,2));
+	    if(sidesBack.z > 0) AddQuad(ref index, new Vector3(vFrom.x,vFrom.y,vFrom.z), new Vector3(vTo.x,vTo.y,vFrom.z), new Vector2(vTile.x,vTile.y), new Vector4(0,1,3,2));
+	    if(sidesFront.z > 0) AddQuad(ref index, new Vector3(vFrom.x,vFrom.y,vTo.z), new Vector3(vTo.x,vTo.y,vTo.z), new Vector2(vTile.x,vTile.y), new Vector4(0,1,3,2));
+	}
+
+	public static void ArrayIncInt(ref int[] arr, int delta)
+	{
+	    int[] tmp = new int[arr.Length + delta];
+	    Array.Copy(arr, 0, tmp, 0, arr.Length);
+	    arr = tmp;
+	}
+
+	public static void ArrayIncV2(ref Vector2[] arr, int delta)
+	{
+	    Vector2[] tmp = new Vector2[arr.Length + delta];
+	    Array.Copy(arr, 0, tmp, 0, arr.Length);
+	    arr = tmp;
+	}
+	
+	public static void ArrayIncV3(ref Vector3[] arr, int delta)
+	{
+	    Vector3[] tmp = new Vector3[arr.Length + delta];
+	    Array.Copy(arr, 0, tmp, 0, arr.Length);
+	    arr = tmp;
+	}
+
+
+}
